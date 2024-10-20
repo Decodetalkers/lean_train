@@ -24,6 +24,32 @@ def binom (n k : Nat) : Nat :=
 #eval binom 2 2
 #eval binom 5 4
 
+def choose (a b : Nat): Nat:=
+  match a, b with
+  | _      ,       0 => 1
+  | 0       , _      => 0
+  | (n + 1) ,(k + 1) => choose n k + choose n (Nat.succ k)
+
+#eval choose 10 0
+
+theorem binom_zero2 (n: Nat) : choose n 0 = 1 := by simp[choose]
+
+--theorem bion1_equal_bion2_0 (n: Nat) :choose a 0 = binom a 0 := 
+--  Nat.recOn ( motive := fun x => choose a 0 = binom a 0)
+--    n
+--    (show choose n 0 = binom n 0 from rfl)
+--    (fun (n: Nat) (ih : choose n 0 = binom a 0) => 
+--      show choose (succ n) 0 = binom (succ n) 0 from
+--      calc choose (succ n) 0 
+--      _ =>)
+--theorem binom_zero2 (n: Nat) : choose n 0 = 1 := 
+--  Nat.recOn ( motive := fun x => choose x 0 = 1 )
+--    n
+--    (show choose n 0 = 1 from rfl)
+--    (fun (n: Nat) (ih: choose n 0 = 1) =>
+--      show choose (succ n) 0 = 1 from
+--      calc choose (succ n) 0
+--        _ = )
 
 -- Import the necessary library for natural numbers (ℕ)
 
@@ -46,8 +72,14 @@ theorem binom_symmetry (n k : Nat) (h : k ≤ n) : binom n k = binom n (n - k) :
       exact Nat.sub_sub_self h
     rw [this]
 
+theorem fact_pos (n : Nat) : fact n > 0 := by
+  induction n with
+  | zero =>
+    simp [fact]
+  | succ n ih =>
+    simp_all [fact]
 
-theorem binom_zero (n : Nat) (h :  n > 0) : binom n 0 = 1 :=
+theorem binom_zero_n_zero (n : Nat) : binom n 0 = 1 :=
   by
     -- Unfold the definition of binom
     unfold binom
@@ -58,53 +90,16 @@ theorem binom_zero (n : Nat) (h :  n > 0) : binom n 0 = 1 :=
     rw [fact_0]  -- Replace fact 0 in the expression
     rw [Nat.mul_comm]
 
-
     rw [functions_one]-- Now it simplifies to fact n / fact n
     -- The expression is now fact n / (1 * fact n)
-    have fact_pos : fact n > 0 := sorry
     rw [Nat.div_self]   -- Show that fact n / fact n = 1
+    exact fact_pos n
 
 
-theorem fact_pos (n : Nat) (h : n > 0) : fact n > 0 := sorry
---  by
---    -- Use cases on n
---    cases n with
---    | zero =>
---      -- This case won't occur since h: n > 0
---      -- No need to prove fact 0 > 0, as we know n is greater than 0
---      contradiction
---    | succ n' =>
---      -- Now we have n = n' + 1
---      -- Show that fact (n' + 1) > 0
---      unfold fact
---      -- We have fact (n' + 1) = (n' + 1) * fact n'
---      apply Nat.mul_pos
---      -- Prove that n' + 1 > 0
---      exact Nat.succ_pos n'
---      -- Prove that fact n' > 0 using the induction hypothesis
---      apply fact_pos
---      -- Show that n' is still > 0
---      exact Nat.succ_pos n'  -- n' = n - 1, thus n' >= 0
--- Theorem: binom n 0 = 1
-
-open Nat
-theorem zero_add (n : Nat) : 0 + n = n :=
-  Nat.recOn (motive := fun x => 0 + x = x)
-    n
-    (show 0 + 0 = 0 from rfl)
-    (fun (n : Nat) (ih : 0 + n = n) =>
-      show 0 + succ n = succ n from
-      calc 0 + succ n
-        _ = succ (0 + n) := rfl
-        _ = succ n       := by rw [ih])
-
-namespace Hidden
-open Nat
-
-theorem zero_add (n : Nat) : 0 + n = n :=
-  Nat.recOn (motive := fun x => 0 + x = x)
-    n
-    rfl
-    (fun n ih => by simp [add_succ, ih])
-end Hidden
-
+theorem binom_zero_n_n (n : Nat) : binom n n = 1 :=
+  by
+    have h_symmetry: binom n n  = binom n (n-n) := binom_symmetry n n (Nat.le_refl n)
+    rw [Nat.sub_self] at h_symmetry  -- n - n = 0
+    rw [binom_zero_n_zero n] at h_symmetry
+    -- Now we have binom n n = 1
+    exact h_symmetry
